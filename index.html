@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Система оповещения об утечке газа</title>
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+		/>
+		<link rel="icon" href="https://img.icons8.com/ios/452/gas-pump.png" />
+		<style>
+			body {
+				font-family: 'Roboto', sans-serif;
+				margin: 0;
+				padding: 0;
+				background-color: #f7f7f7;
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start;
+				padding: 20px;
+			}
+
+			.header {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 100%;
+				background-color: #fff;
+				padding: 10px 0px;
+				box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+				border-radius: 10px;
+				margin-bottom: 20px;
+				text-align: center;
+			}
+
+			.header img {
+				width: 50px;
+				height: 50px;
+				margin-right: 15px;
+			}
+
+			.header h1 {
+				font-size: 28px;
+				color: #333;
+				margin: 0;
+			}
+
+			.container {
+				display: flex;
+				width: 100%;
+				justify-content: center;
+			}
+
+			.left-panel {
+				width: 1000px;
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: space-around;
+				gap: 20px;
+			}
+
+			.right-panel {
+				width: 100%;
+				max-width: 380px;
+			}
+
+			.sensor-cards {
+				width: 100%;
+				display: flex;
+				flex-wrap: wrap;
+				justify-content: flex-start;
+				gap: 20px;
+			}
+
+			.sensor-card {
+				background-color: #fff;
+				padding: 15px;
+				width: 180px;
+				text-align: center;
+				border-radius: 8px;
+				box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+				cursor: pointer;
+				transition: transform 0.3s ease, box-shadow 0.3s ease;
+			}
+
+			.sensor-card:hover {
+				transform: translateY(-5px);
+				box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+			}
+
+			.status {
+				padding: 5px 10px;
+				border-radius: 5px;
+				font-weight: bold;
+				margin-top: 10px;
+			}
+
+			.status-green {
+				background-color: #4caf50;
+				color: white;
+			}
+			.status-yellow {
+				background-color: #ffb74d;
+				color: white;
+			}
+			.status-orange {
+				background-color: #ff7043;
+				color: white;
+			}
+			.status-burgundy {
+				background-color: #8c1700;
+				color: white;
+			}
+			.status-purple {
+				background-color: #630076;
+				color: white;
+			}
+
+			.log-container {
+				width: 100%;
+				height: 400px;
+				overflow-y: auto;
+				overflow-x: hidden;
+				border: 1px solid #ddd;
+				padding: 10px 10px 10px 5px;
+				border-radius: 8px;
+				background-color: white;
+				margin-right: 35px;
+			}
+
+			.log-entry {
+				display: flex;
+				justify-content: space-between;
+				padding: 5px;
+				border-bottom: 1px solid #eee;
+				gap: 5px;
+			}
+
+			.log-entry span {
+				display: block;
+				width: 270px;
+			}
+
+			.log-entry .status {
+				display: inline-block;
+				margin-right: 10px;
+			}
+
+			#modal {
+				display: none;
+				position: fixed;
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				background-color: white;
+				padding: 20px;
+				border-radius: 8px;
+				box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+				width: 80%;
+				max-width: 600px;
+				z-index: 100;
+				cursor: move;
+			}
+
+			.modal-close {
+				background-color: #f44336;
+				color: white;
+				border: none;
+				padding: 10px 20px;
+				cursor: pointer;
+				border-radius: 5px;
+				position: absolute;
+				top: 10px;
+				right: 10px;
+			}
+
+			.modal-close:hover {
+				background-color: #d32f2f;
+			}
+
+			#sensor-log-container {
+				max-height: 300px;
+				overflow-y: auto;
+				margin-top: 20px;
+			}
+
+			.draggable {
+				cursor: move;
+			}
+
+			.log-container h3 {
+				margin: 0;
+				font-size: 18px;
+				padding-bottom: 10px;
+				border-bottom: 2px solid #ddd;
+			}
+
+			.alert {
+				background-color: #f44336;
+				color: white;
+				padding: 15px;
+				font-size: 16px;
+				font-weight: bold;
+				margin-top: 20px;
+				border-radius: 5px;
+				text-align: center;
+			}
+
+			.countdown {
+				font-size: 18px;
+				color: #f44336;
+				font-weight: bold;
+				text-align: center;
+				margin-top: 10px;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- Верхняя панель с логотипом и заголовком -->
+		<div class="header">
+			<img src="https://img.icons8.com/ios/452/gas-pump.png" alt="Логотип" />
+			<h1>Система оповещения об утечке газа</h1>
+		</div>
+
+		<!-- Контейнер для датчиков и журнала -->
+		<div class="container">
+			<!-- Левая панель с датчиками -->
+			<div class="left-panel">
+				<div class="sensor-cards" id="sensors"></div>
+			</div>
+
+			<!-- Правая панель с журналом -->
+			<div class="right-panel">
+				<!-- Журнал событий -->
+				<div class="log-container" id="log-container">
+					<h3>Журнал событий всех датчиков</h3>
+					<div id="global-log"></div>
+				</div>
+
+				<!-- Тревога и обратный отсчет -->
+				<div id="alert" class="alert" style="display: none">
+					Тревога! Утечка газа обнаружена!
+				</div>
+				<div id="countdown" class="countdown"></div>
+			</div>
+		</div>
+
+		<!-- Модальное окно для конкретного датчика -->
+		<div id="modal" class="draggable">
+			<button class="modal-close" onclick="closeModal()">Закрыть</button>
+			<div id="sensor-log-container"></div>
+		</div>
+
+		<script src="script.js"></script>
+	</body>
+</html>
